@@ -1,0 +1,275 @@
+<div class="row <check if=" {{!@mobile}}">
+	<true>h-100</true>
+	</check>">
+	<div class="col-md-3 pt-2" id="item-list">
+		<div id="list">
+			<div class="container">
+				<div class="row mt-2">
+					<div class="col-md-12 d-flex justify-content-end">
+						<input type="text" name="search" class="form-control float-right search" placeholder="Search">
+						<button type="button" class="btn btn-sm btn-tool" id="new-data"><i class="fa-solid fa-plus"></i></button>
+						<input type="hidden" id="new-path" value="{{@new_path}}">
+					</div>
+				</div>
+			</div>
+			<div class="container">
+				<div class="mt-3">
+					<ul class="list list-inline">
+						<repeat group="{{@items}}" value="{{@item}}">
+							<li data-id="{{ @item['id'] }}" class="shadow">
+								<div class="row">
+									<div class="col-8">
+										<div class="row ml-2">
+											<div class="col-12">
+												<h5 class="mb-0">
+													<span class="name">{{@item['name']}}</span>
+												</h5>
+											</div>
+										</div>
+										<div class="row mt-1 d-flex justify-content-between">
+											<div class="col-12">
+												<check if="{{@item['share'] == 1}}">
+													<true>
+														<i class="fa-solid fa-people-group" id="shared"></i>
+													</true>
+												</check>
+												<a href="/list/{{@item['list']}}" class="list link-custom">{{@item['list']}}</a>&emsp;
+												<span class="tags">
+													<repeat group="{{explode(',', @item['tags'])}}" value="{{@subitem}}">
+														<a href="/tag/{{@subitem}}"><span class="badge rounded-pill bg-custom">{{@subitem}}</span></a>
+													</repeat>
+												</span>
+											</div>
+										</div>
+									</div>
+									<div class="col-4 d-flex justify-content-end align-items-center">
+										<button type="button" class="btn btn-sm btn-tool" id="edit-data" data-id="{{@item['id']}}" data-name="{{@item['name']}}" data-path="{{@item['path']}}" data-tags="{{@item['tags']}}" data-list="{{@item['list']}}" data-share="{{@item['share']}}" data-time="{{@item['time_upd']}}"><i class="fa-solid fa-pen-to-square"></i></button>
+										<form action="{{ @URI }}" method="post" enctype="application/x-www-form-urlencoded">
+											<input type="hidden" name="task" value="delete">
+											<input type="hidden" name="id" value="{{@item['id']}}">
+											<button type="submit" class="btn btn-sm btn-tool text-danger"><i class="fa-solid fa-trash-can"></i></button>
+										</form>
+									</div>
+								</div>
+							</li>
+						</repeat>
+					</ul>
+				</div>
+			</div>
+			<ul class="pagination d-flex justify-content-center"></ul>
+		</div>
+	</div>
+	<div class="col-md-9 pt-2 bg-white" id="form-area">
+		<check if=" {{!@mobile}}">
+			<true><button type="button" class="btn btn-sm btn-tool" id="show-hide-list"><i class="fa-solid fa-chevron-left" id="show-hide-item"></i></button></true>
+			<false><div align="center"><button type="button" class="btn btn-sm btn-tool" id="show-hide-list"><i class="fa-solid fa-chevron-up" id="show-hide-item"></i></button></div></false>
+		</check>
+
+		<div class="row">
+			<form action="{{ @URI }}" method="post" id="edit-item" enctype="application/x-www-form-urlencoded">
+				<div class="row mb-2">
+					<div class="col-12 mb-2">
+						<input type="text" name="name" id="edit-name" class="form-control" placeholder="Name" value="">
+					</div>
+				</div>
+				<div class="row mb-2">
+					<div class="col-md-6 mb-2">
+						<select name="tags[]" multiple id="edit-tags" placeholder="Tags" class="form-control" style="width: 100%;">
+							<option value=""></option>
+							<repeat group="{{@tags}}" value="{{@item}}">
+								<option>{{ @item }}</option>
+							</repeat>
+						</select>
+					</div>
+					<div class="col-md-5 mb-2">
+						<select name="list" placeholder="List" id="edit-list" class="form-control">
+							<option value=""></option>
+							<repeat group="{{@list}}" value="{{@item}}">
+								<option>{{@item}}</option>
+							</repeat>
+						</select>
+					</div>
+					<div class="col-md-1 mb-2 d-flex justify-content-end align-items-center form-check form-switch">
+						<input class="form-check-input" type="checkbox" name="share" id="edit-share" value="1">&nbsp;
+						<label class="form-check-label">Shared</label>
+					</div>
+				</div>
+				<input type="hidden" name="task" id="task" value="edit">
+				<input type="hidden" name="id" id="edit-id" value="0">
+				<input type="hidden" name="path" id="edit-path" value="{{@new_path}}">
+				<input type="hidden" id="edit-time" value="">
+				<div class="d-flex justify-content-end pb-3">
+					<button type="submit" class="btn btn-success btn-sm">Save</button>
+				</div>
+			</form>
+		</div>
+		<div id="editor" style="height:50vh;"></div>
+		<div style="text-align: right; font-size: 12px" id="autosave"></div>
+	</div>
+</div>
+
+<script>
+	$('#editor')
+		.trumbowyg({
+			btns: [
+				['viewHTML'],
+				['undo', 'redo'],
+				['formatting'],
+				['strong', 'em', 'del'],
+				['link'],
+				['unorderedList', 'orderedList'],
+				['removeformat'],
+				['base64'],
+				['emoji']
+			],
+			tagsToRemove: ['script', 'php'],
+			removeformatPasted: true,
+			linkTargets: ['_blank']
+		});
+</script>
+
+<script>
+	$('#edit-tags').select2({
+		theme: 'bootstrap4',
+		placeholder: "Tags",
+		tags: true,
+		allowClear: true
+	});
+
+	$('#edit-list').select2({
+		theme: 'bootstrap4',
+		placeholder: "List",
+		tags: true,
+		allowClear: true
+	});
+</script>
+
+<script>
+	<check if="{{!@mobile}}">
+		<true>
+			tippy('#show-hide-list', {
+				content: "Show and hide list",
+			});
+		
+			$(document).on("click", "#show-hide-list", function() {
+				var x = document.getElementById("item-list");
+				if (x.style.display === "none") {
+					x.style.display = "block";
+					$("#form-area").removeClass("col-md-12");
+					$("#form-area").addClass("col-md-9");
+		
+					$("#show-hide-item").removeClass("fa-chevron-right");
+					$("#show-hide-item").addClass("fa-chevron-left");
+		
+				} else {
+					x.style.display = "none";
+					$("#form-area").removeClass("col-md-9");
+					$("#form-area").addClass("col-md-12");
+		
+					$("#show-hide-item").removeClass("fa-chevron-left");
+					$("#show-hide-item").addClass("fa-chevron-right");
+				}
+			});
+		</true>
+		<false>
+			tippy('#show-hide-list', {
+				content: "Show and hide list",
+			});
+		
+			$(document).on("click", "#show-hide-list", function() {
+				var x = document.getElementById("item-list");
+				if (x.style.display === "none") {
+					x.style.display = "block";
+					$("#show-hide-item").removeClass("fa-chevron-down");
+					$("#show-hide-item").addClass("fa-chevron-up");
+		
+				} else {
+					x.style.display = "none";
+					$("#show-hide-item").removeClass("fa-chevron-up");
+					$("#show-hide-item").addClass("fa-chevron-down");
+				}
+			});
+		</false>
+	</check>
+</script>
+
+<script>
+	$(document).on("click", "#edit-data", function() {
+		document.getElementById('edit-id').setAttribute("value", $(this).data('id'));
+		document.getElementById('edit-name').setAttribute("value", $(this).data('name'));
+		document.getElementById('edit-path').setAttribute("value", $(this).data('path'));
+		$('#edit-list').val($(this).data('list')).trigger('change');
+		if ($(this).data('share') == "1") {
+			document.getElementById('edit-share').setAttribute("checked", "checked");
+		} else {
+			document.getElementById('edit-share').removeAttribute("checked");
+		}
+		$('#edit-tags').val($(this).data('tags').split(",")).trigger('change');
+		document.getElementById('edit-time').setAttribute("value", $(this).data('time'));
+
+		$.post('/htmlread', {
+			path: $(this).data('path')
+		}, function(response) {
+			$('#editor').trumbowyg('html', response.data.html);
+		});
+		$('#autosave').text("Last saved time " + $(this).data('time'));
+	});
+
+	$(document).on("click", "#new-data", function() {
+		document.getElementById('edit-id').setAttribute("value", 0);
+		document.getElementById('edit-name').setAttribute("value", "");
+		document.getElementById('edit-path').setAttribute("value", $('#new-path').val());
+		$('#edit-list').val(null).trigger('change');
+		document.getElementById('edit-share').removeAttribute("checked");
+		$('#edit-tags').val(null).trigger('change');
+		$('#editor').trumbowyg('empty');
+		$('#autosave').text("");
+	});
+</script>
+
+<script>
+	const timer = ms => new Promise(res => setTimeout(res, ms))
+
+	async function autosave() {
+		await timer(600000);
+		while (true) {
+			$.post('/htmlwrite', {
+				path: $('#edit-path').val(),
+				html: $('#editor').trumbowyg('html')
+			}, function(response) {
+				$('#autosave').text("Last saved time " + response.data.date)
+			}).fail(function() {
+				$('#autosave').text("Autosave not working");
+			});
+		}
+	}
+	if ($('#edit-id').val() != 0) {
+		autosave();
+	}
+</script>
+
+<script>
+	$("#edit-item").on("submit", function(event) {
+		event.preventDefault();
+		$.post('/htmlwrite', {
+			path: $('#edit-path').val(),
+			html: $('#editor').trumbowyg('html')
+		}, function(response) {
+			$("#edit-item").unbind('submit').submit();
+		}).fail(function() {
+			$('#autosave').text("Saving not working");
+		});
+	});
+</script>
+
+<script>
+	tippy('#shared', {
+		content: "Note shared",
+	});
+</script>
+
+<script>
+	var table = new List('list', {
+		valueNames: ['name', 'tags', 'list']
+	});
+</script>
