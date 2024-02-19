@@ -23,5 +23,4 @@ Just copy fhe new version files
 - List.js 2.3.1 (https://listjs.com/)
 - Select2 4.0.13 (https://select2.org/)
 - TippyJs 6.3.7 (https://atomiks.github.io/tippyjs/)
-- jshashes 1.0.8 (https://github.com/h2non/jshashes)
-- EasyMDE 2.18.0 (https://github.com/Ionaru/easy-markdown-editor)
+- Trumbowyg 2.27.3 (https://github.com/Alex-D/Trumbowyg)
