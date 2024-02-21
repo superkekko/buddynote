@@ -3,4 +3,4 @@
 /data/*.db
 /data/*.json
 /data/db_version
-/data/files/*
+/data/files/*.html
