@@ -43,7 +43,7 @@
 										</div>
 									</div>
 									<div class="col-4 d-flex justify-content-end align-items-center">
-										<button type="button" class="btn btn-sm btn-tool" id="edit-data" data-id="{{@item['id']}}" data-name="{{@item['name']}}" data-path="{{@item['path']}}" data-tags="{{@item['tags']}}" data-list="{{@item['list']}}" data-share="{{@item['share']}}" data-time="{{@item['time_upd']}}"><i class="fa-solid fa-pen-to-square"></i></button>
+										<button type="button" class="btn btn-sm btn-tool" id="edit-data" data-id="{{@item['id']}}" data-name="{{@item['name']}}" data-path="{{@item['path']}}" data-version="{{@item['version']}}" data-tags="{{@item['tags']}}" data-list="{{@item['list']}}" data-share="{{@item['share']}}" data-time="{{@item['time_upd']}}"><i class="fa-solid fa-pen-to-square"></i></button>
 										<form action="{{ @URI }}" method="post" enctype="application/x-www-form-urlencoded">
 											<input type="hidden" name="task" value="delete">
 											<input type="hidden" name="id" value="{{@item['id']}}">
@@ -96,10 +96,11 @@
 				</div>
 				<input type="hidden" name="task" id="task" value="edit">
 				<input type="hidden" name="id" id="edit-id" value="0">
+				<input type="hidden" name="lock" id="edit-version" value="0">
 				<input type="hidden" name="path" id="edit-path" value="{{@new_path}}">
 				<input type="hidden" id="edit-time" value="">
 				<div class="d-flex justify-content-end pb-3">
-					<button type="submit" class="btn btn-success btn-sm">Save</button>
+					<button type="submit" class="btn btn-success btn-sm" id="edit-save">Save</button>
 				</div>
 			</form>
 		</div>
@@ -206,6 +207,7 @@
 		}
 		$('#edit-tags').val($(this).data('tags').split(",")).trigger('change');
 		document.getElementById('edit-time').setAttribute("value", $(this).data('time'));
+		document.getElementById('edit-version').setAttribute("value", $(this).data('version'));
 
 		$.post('/htmlread', {
 			path: $(this).data('path')
@@ -222,6 +224,8 @@
 		$('#edit-list').val(null).trigger('change');
 		document.getElementById('edit-share').removeAttribute("checked");
 		$('#edit-tags').val(null).trigger('change');
+		document.getElementById('edit-time').setAttribute("value", "");
+		document.getElementById('edit-version').setAttribute("value", 0);
 		$('#editor').trumbowyg('empty');
 		$('#autosave').text("");
 	});
@@ -231,31 +235,45 @@
 	const timer = ms => new Promise(res => setTimeout(res, ms))
 
 	async function autosave() {
-		await timer(600000);
 		while (true) {
-			$.post('/htmlwrite', {
-				path: $('#edit-path').val(),
-				html: $('#editor').trumbowyg('html')
-			}, function(response) {
-				$('#autosave').text("Last saved time " + response.data.date)
-			}).fail(function() {
-				$('#autosave').text("Autosave not working");
-			});
+			await timer(60000);
+			if($('#edit-id').val() != 0){
+				$.post('/htmlwrite', {
+					id: $('#edit-id').val(),
+					version: $('#edit-version').val(),
+					path: $('#edit-path').val(),
+					html: $('#editor').trumbowyg('html')
+				}, function(response) {
+					if(response.data.message == 'OK'){
+						$('#autosave').text("Last saved time " + response.data.date);
+						document.getElementById('edit-version').setAttribute("value", response.data.version);
+					}else if(response.data.message == 'KO'){
+						$('#autosave').text(response.data.error)	
+					}
+				}).fail(function() {
+					$('#autosave').text("Autosave not working");
+				});	
+			}
 		}
 	}
-	if ($('#edit-id').val() != 0) {
-		autosave();
-	}
+	
+	autosave();
 </script>
 
 <script>
 	$("#edit-item").on("submit", function(event) {
 		event.preventDefault();
 		$.post('/htmlwrite', {
+			id: $('#edit-id').val(),
+			version: $('#edit-version').val(),
 			path: $('#edit-path').val(),
 			html: $('#editor').trumbowyg('html')
 		}, function(response) {
-			$("#edit-item").unbind('submit').submit();
+			if(response.data.message == 'OK'){
+				$("#edit-item").unbind('submit').submit();
+			}else if(response.data.message == 'KO'){
+				$('#autosave').text(response.data.error)	
+			}
 		}).fail(function() {
 			$('#autosave').text("Saving not working");
 		});

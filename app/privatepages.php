@@ -131,9 +131,9 @@ class privatepages extends authentication {
 			}
 
 			if ($id == 0) {
-				$f3->get('DB')->exec("INSERT INTO note (name, path, tags, list, group_id, share, user_ins, time_ins, user_upd, time_upd) VALUES (?,?,?,?,?,?,?,?,?,?)", array($f3->get('POST.name'), $f3->get('POST.path'), $tags, $f3->get('POST.list'), $current_user['group_id'], $share, $current_user['user_id'], date("Y-m-d H:i:s"), $current_user['user_id'], date("Y-m-d H:i:s")));
+				$f3->get('DB')->exec("INSERT INTO note (name, path, version, tags, list, group_id, share, user_ins, time_ins, user_upd, time_upd) VALUES (?,?,?,?,?,?,?,?,?,?,?)", array($f3->get('POST.name'), $f3->get('POST.path'), 1, $tags, $f3->get('POST.list'), $current_user['group_id'], $share, $current_user['user_id'], date("Y-m-d H:i:s"), $current_user['user_id'], date("Y-m-d H:i:s")));
 			} else {
-				$f3->get('DB')->exec("UPDATE note SET name=?, tags=?, list=?, share=?, user_upd=?, time_upd=? WHERE id=?", array($f3->get('POST.name'), $tags, $f3->get('POST.list'), $share, $current_user['user_id'], date("Y-m-d H:i:s"), $id));
+				$f3->get('DB')->exec("UPDATE note SET name=?, tags=?, version=version+1, list=?, share=?, user_upd=?, time_upd=? WHERE id=?", array($f3->get('POST.name'), $tags, $f3->get('POST.list'), $share, $current_user['user_id'], date("Y-m-d H:i:s"), $id));
 			}
 		}
 

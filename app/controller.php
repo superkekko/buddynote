@@ -30,6 +30,7 @@ class controller {
 			    id      	INTEGER PRIMARY KEY AUTOINCREMENT,
 			    name    	TEXT,
 			    path		TEXT,
+			    version		INTEGER NOT NULL,
 			    tags    	TEXT,
 			    list    	TEXT,
 			    group_id	TEXT,
