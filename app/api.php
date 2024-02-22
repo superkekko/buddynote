@@ -31,7 +31,7 @@ class api extends authentication {
 		$path = $f3->get('POST.path');
 		$data = $f3->get('POST.html');
 
-		$saved_version = $f3->get('DB')->exec("SELECT version FROM note where id=?", $id);
+		$saved_version = $f3->get('DB')->exec("SELECT version FROM note WHERE id=?", $id);
 
 		if (!empty($path) && !empty($data)) {
 			$path = $f3->get('main_path')."/data/files/".$path;
@@ -41,6 +41,7 @@ class api extends authentication {
 				$write = file_put_contents($path, $data, LOCK_EX);
 
 				if ($write != false) {
+					$f3->get('DB')->exec("UPDATE note SET version=? WHERE id=?", array($version+1, $id));
 					$return_array = ['data' => array('message' => 'OK', 'version' => $version+1, 'date' => date("Y-m-d H:i:s"), 'byte' => $write)];
 					header('Content-Type: application/json');
 					echo json_encode($return_array);

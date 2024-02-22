@@ -62,7 +62,9 @@
 	<div class="col-md-9 pt-2 bg-white" id="form-area">
 		<check if=" {{!@mobile}}">
 			<true><button type="button" class="btn btn-sm btn-tool" id="show-hide-list"><i class="fa-solid fa-chevron-left" id="show-hide-item"></i></button></true>
-			<false><div align="center"><button type="button" class="btn btn-sm btn-tool" id="show-hide-list"><i class="fa-solid fa-chevron-up" id="show-hide-item"></i></button></div></false>
+			<false>
+				<div align="center"><button type="button" class="btn btn-sm btn-tool" id="show-hide-list"><i class="fa-solid fa-chevron-up" id="show-hide-item"></i></button></div>
+			</false>
 		</check>
 
 		<div class="row">
@@ -146,55 +148,78 @@
 </script>
 
 <script>
-	<check if="{{!@mobile}}">
-		<true>
-			tippy('#show-hide-list', {
-				content: "Show and hide list",
-			});
-		
-			$(document).on("click", "#show-hide-list", function() {
-				var x = document.getElementById("item-list");
-				if (x.style.display === "none") {
-					x.style.display = "block";
-					$("#form-area").removeClass("col-md-12");
-					$("#form-area").addClass("col-md-9");
-		
-					$("#show-hide-item").removeClass("fa-chevron-right");
-					$("#show-hide-item").addClass("fa-chevron-left");
-		
-				} else {
-					x.style.display = "none";
-					$("#form-area").removeClass("col-md-9");
-					$("#form-area").addClass("col-md-12");
-		
-					$("#show-hide-item").removeClass("fa-chevron-left");
-					$("#show-hide-item").addClass("fa-chevron-right");
-				}
-			});
-		</true>
-		<false>
-			tippy('#show-hide-list', {
-				content: "Show and hide list",
-			});
-		
-			$(document).on("click", "#show-hide-list", function() {
-				var x = document.getElementById("item-list");
-				if (x.style.display === "none") {
-					x.style.display = "block";
-					$("#show-hide-item").removeClass("fa-chevron-down");
-					$("#show-hide-item").addClass("fa-chevron-up");
-		
-				} else {
-					x.style.display = "none";
-					$("#show-hide-item").removeClass("fa-chevron-up");
-					$("#show-hide-item").addClass("fa-chevron-down");
-				}
-			});
-		</false>
+	tippy('#show-hide-list', {
+		content: "Show and hide list",
+	});
+
+	<check if = "{{!@mobile}}">
+	<true>
+	$(document).on("click", "#show-hide-list", function() {
+		var x = document.getElementById("item-list");
+		if (x.style.display === "none") {
+			x.style.display = "block";
+			$("#form-area").removeClass("col-md-12");
+			$("#form-area").addClass("col-md-9");
+
+			$("#show-hide-item").removeClass("fa-chevron-right");
+			$("#show-hide-item").addClass("fa-chevron-left");
+
+		} else {
+			x.style.display = "none";
+			$("#form-area").removeClass("col-md-9");
+			$("#form-area").addClass("col-md-12");
+
+			$("#show-hide-item").removeClass("fa-chevron-left");
+			$("#show-hide-item").addClass("fa-chevron-right");
+		}
+	});
+	</true>
+	<false>
+	$(document).on("click", "#show-hide-list", function() {
+		var x = document.getElementById("item-list");
+		if (x.style.display === "none") {
+			x.style.display = "block";
+			$("#show-hide-item").removeClass("fa-chevron-down");
+			$("#show-hide-item").addClass("fa-chevron-up");
+
+		} else {
+			x.style.display = "none";
+			$("#show-hide-item").removeClass("fa-chevron-up");
+			$("#show-hide-item").addClass("fa-chevron-down");
+		}
+	});
+	</false>
 	</check>
 </script>
 
 <script>
+	const openItem = getCookie('opened-item')
+	if (typeof openItem !== 'undefined') {
+		const objData = $("li").find("[data-id="+openItem+"]")[0]
+		
+		document.getElementById('edit-id').setAttribute("value", objData.dataset.id);
+		document.getElementById('edit-name').setAttribute("value", objData.dataset.name);
+		document.getElementById('edit-path').setAttribute("value", objData.dataset.path);
+		$('#edit-list').val(objData.dataset.list).trigger('change');
+		if (objData.dataset.share == "1") {
+			document.getElementById('edit-share').setAttribute("checked", "checked");
+		} else {
+			document.getElementById('edit-share').removeAttribute("checked");
+		}
+		$('#edit-tags').val(objData.dataset.tags.split(",")).trigger('change');
+		document.getElementById('edit-time').setAttribute("value", objData.dataset.time);
+		document.getElementById('edit-version').setAttribute("value", objData.dataset.version);
+
+		$.post('/htmlread', {
+			path: objData.dataset.path
+		}, function(response) {
+			$('#editor').trumbowyg('html', response.data.html);
+		});
+		$('#autosave').text("Last saved time " + objData.dataset.time);
+		
+		deleteCookie('opened-item','{{@HOST}}');
+	}
+	
 	$(document).on("click", "#edit-data", function() {
 		document.getElementById('edit-id').setAttribute("value", $(this).data('id'));
 		document.getElementById('edit-name').setAttribute("value", $(this).data('name'));
@@ -237,26 +262,26 @@
 	async function autosave() {
 		while (true) {
 			await timer(60000);
-			if($('#edit-id').val() != 0){
+			if ($('#edit-id').val() != 0) {
 				$.post('/htmlwrite', {
 					id: $('#edit-id').val(),
 					version: $('#edit-version').val(),
 					path: $('#edit-path').val(),
 					html: $('#editor').trumbowyg('html')
 				}, function(response) {
-					if(response.data.message == 'OK'){
+					if (response.data.message == 'OK') {
 						$('#autosave').text("Last saved time " + response.data.date);
 						document.getElementById('edit-version').setAttribute("value", response.data.version);
-					}else if(response.data.message == 'KO'){
-						$('#autosave').text(response.data.error)	
+					} else if (response.data.message == 'KO') {
+						$('#autosave').text(response.data.error)
 					}
 				}).fail(function() {
 					$('#autosave').text("Autosave not working");
-				});	
+				});
 			}
 		}
 	}
-	
+
 	autosave();
 </script>
 
@@ -269,10 +294,11 @@
 			path: $('#edit-path').val(),
 			html: $('#editor').trumbowyg('html')
 		}, function(response) {
-			if(response.data.message == 'OK'){
+			if (response.data.message == 'OK') {
+				setCookie('opened-item', $('#edit-id').val(), {domain: '{{@HOST}}', Secure: true, 'max-age': 1, SameSite: 'lax'})
 				$("#edit-item").unbind('submit').submit();
-			}else if(response.data.message == 'KO'){
-				$('#autosave').text(response.data.error)	
+			} else if (response.data.message == 'KO') {
+				$('#autosave').text(response.data.error)
 			}
 		}).fail(function() {
 			$('#autosave').text("Saving not working");
@@ -288,6 +314,15 @@
 
 <script>
 	var table = new List('list', {
-		valueNames: ['name', 'tags', 'list']
+		valueNames: ['name', 'tags', 'list'],
+		page: 10,
+		pagination: [{
+			innerWindow: 3,
+			outerWindow: 2,
+			item: "<li class='page-item'><a class='page page-link' href='#'></a></li>"
+		}]
+	});
+	table.sort('name', {
+		order: 'desc'
 	});
 </script>
