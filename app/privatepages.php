@@ -31,6 +31,14 @@ class privatepages extends authentication {
 		$tags = array_unique($tags);
 		asort($tags);
 		$f3->set('tags', $tags);
+		
+		
+		$users = $f3->get('DB')->exec("SELECT distinct user_id FROM user where user_id <> ? and group_id = ?", array($current_user['user_id'], $current_user['group_id']));
+		$json_user = '';
+		foreach ($users as $user){
+			$json_user .= "{login: '".$user['user_id']."'},";
+		}
+		$f3->set('mention', $json_user);
 	}
 
 	function afterroute($f3) {
