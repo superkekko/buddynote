@@ -42,6 +42,7 @@
 											</div>
 										</div>
 									</div>
+									<span class="time-upd" data-timestamp="{{ @formatDate(@item['time_upd'], '9991231000000', false, false, true) }}" hidden></span>
 									<div class="col-4 d-flex justify-content-end align-items-center">
 										<button type="button" class="btn btn-sm btn-tool" id="edit-data" data-id="{{@item['id']}}" data-name="{{@item['name']}}" data-path="{{@item['path']}}" data-version="{{@item['version']}}" data-tags="{{@item['tags']}}" data-list="{{@item['list']}}" data-share="{{@item['share']}}" data-time="{{@item['time_upd']}}"><i class="fa-solid fa-pen-to-square"></i></button>
 										<form action="{{ @URI }}" method="post" enctype="application/x-www-form-urlencoded">
@@ -314,7 +315,10 @@
 
 <script>
 	var table = new List('list', {
-		valueNames: ['name', 'tags', 'list'],
+		valueNames: ['name', 'tags', 'list', {
+			name: 'time-upd',
+			attr: 'data-timestamp'
+		}],
 		page: 10,
 		pagination: [{
 			innerWindow: 3,
@@ -322,7 +326,7 @@
 			item: "<li class='page-item'><a class='page page-link' href='#'></a></li>"
 		}]
 	});
-	table.sort('name', {
+	table.sort('time-upd', {
 		order: 'desc'
 	});
 </script>

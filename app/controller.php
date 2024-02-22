@@ -81,8 +81,8 @@ class controller {
 			}
 		}
 
-		$f3->set('formatDate', function ($date, $empty = '', $time = false, $second = false) {
-			return $this->formatDate($date, $empty, $time, $second);
+		$f3->set('formatDate', function ($date, $empty = '', $time = false, $second = false, $short=false) {
+			return $this->formatDate($date, $empty, $time, $second, $short);
 		});
 
 		$f3->set('formatNumber', function ($value, $empty = '', $decimal = false, $money = false, $simple = false) {
@@ -179,11 +179,13 @@ class controller {
 		return $number;
 	}
 
-	function formatDate($date, $empty = '', $time = false, $second = false) {
+	function formatDate($date, $empty = '', $time = false, $second = false, $short = false) {
 		if ($time && !$second) {
 			$format = 'd/m/Y H:i';
 		} elseif ($time && $second) {
 			$format = 'd/m/Y H:i:s';
+		} elseif($short){
+			$format = 'YmdHis';
 		} else {
 			$format = 'd/m/Y';
 		}
