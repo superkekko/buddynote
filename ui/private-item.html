@@ -314,7 +314,9 @@
 			html: $('#editor').trumbowyg('html')
 		}, function(response) {
 			if (response.data.message == 'OK') {
-				setCookie('opened-item', $('#edit-id').val(), {domain: '{{@HOST}}', Secure: true, 'max-age': 1, SameSite: 'lax'})
+				if($('#edit-id').val() != 0){
+					setCookie('opened-item', $('#edit-id').val(), {domain: '{{@HOST}}', Secure: true, 'max-age': 1, SameSite: 'lax'})
+				}
 				$("#edit-item").unbind('submit').submit();
 			} else if (response.data.message == 'KO') {
 				$('#autosave').text(response.data.error)
